@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dolphinstore - Database Pelanggan & Lucky Draw Resmi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Google Fonts: Plus Jakarta Sans, Outfit, & Fredoka Toy Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+            toy: ['"Fredoka"', 'cursive', 'sans-serif']
+          },
+          colors: {
+            dolphin: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom Scrollbar Tema Terang */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #e0f2fe 0%, #f0f9ff 45%, #f8fafc 100%);
+      color: #1e293b;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(224, 242, 254, 0.85);
+      box-shadow: 0 16px 36px rgba(14, 165, 233, 0.08);
+    }
+
+    .glass-dark {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(186, 230, 253, 0.7);
+    }
+
+    .glow-cyan {
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.25);
+    }
+
+    .text-glow {
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.7), 0 0 32px rgba(14, 165, 233, 0.4);
+    }
+
+    .bubble-float {
+      animation: bubbleFloat 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes bubbleFloat {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-15px) rotate(4deg); }
+    }
+  </style>
+</head>
+
+<body class="flex flex-col min-h-screen text-slate-800 antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Top Navigation Bar (Disembunyikan) -->
+  <header id="mainHeader" class="hidden sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-sky-200/80 shadow-sm py-2.5 px-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchTab('tab-register')">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 via-sky-500 to-dolphin-600 flex items-center justify-center text-xl text-white shadow-md glow-cyan flex-shrink-0">
+          🐬
+        </div>
+        <div>
+          <h1 class="font-toy text-xl sm:text-2xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-700">
+            DOLPHINSTORE
+          </h1>
+          <p class="text-[10px] text-sky-600/80 font-bold uppercase tracking-widest leading-none">Official Toys & Community</p>
+        </div>
+      </div>
+
+      <!-- Top Navigation Tabs (Tema Terang) -->
+      <nav class="flex items-center gap-1.5 p-1 bg-sky-100/80 rounded-2xl border border-sky-200/80 text-xs font-bold text-slate-600 shadow-inner">
+        <button id="nav-register" onclick="switchTab('tab-register')" class="px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 to-dolphin-600 text-white shadow-md">
+          <i class="fa-solid fa-user-plus text-xs"></i>
+          <span>Form Pelanggan</span>
+        </button>
+        <button id="nav-undian" onclick="switchTab('tab-undian')" class="px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-sky-700 hover:bg-white/80">
+          <i class="fa-solid fa-trophy text-amber-500 text-xs"></i>
+          <span>Halaman Undian</span>
+        </button>
+        <button id="nav-dashboard" onclick="openDashboardSafe()" class="px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-sky-700 hover:bg-white/80">
+          <i class="fa-solid fa-shield-halved text-cyan-600 text-xs"></i>
+          <span>Dashboard Staff</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <div id="toast" class="fixed top-20 right-4 z-50 transform translate-x-96 opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-full">
+    <div id="toastInner" class="bg-white/95 border-2 border-cyan-400 text-slate-800 p-4 rounded-2xl shadow-xl flex items-center gap-3 backdrop-blur-md">
+      <div id="toastIcon" class="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg flex-shrink-0">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div class="min-w-0">
+        <h4 id="toastTitle" class="font-bold text-sm text-slate-900">Informasi</h4>
+        <p id="toastMsg" class="text-xs text-slate-600 leading-tight">Pesan notifikasi.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="staffAuthModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white max-w-sm w-full rounded-3xl p-6 sm:p-7 border border-sky-200 text-center text-slate-800 shadow-2xl relative glow-cyan">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-400 to-dolphin-600 flex items-center justify-center text-2xl mx-auto mb-3 shadow-md text-white">
+        🔐
+      </div>
+      <h3 class="font-toy text-xl font-bold text-slate-800 mb-1">Akses Petugas Dolphinstore</h3>
+      <p class="text-xs text-slate-500 mb-5 leading-relaxed">
+        Masukkan kata sandi staf untuk membuka dashboard data pelanggan.
+      </p>
+
+      <div class="mb-4">
+        <input type="password" id="staffPasswordInput" placeholder="Ketik kata sandi..." class="w-full py-3 px-4 rounded-xl bg-sky-50/80 border border-sky-200 text-slate-800 text-center text-sm font-semibold tracking-wider placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400/20 focus:bg-white transition-all" onkeydown="if(event.key==='Enter') verifikasiPasswordStaff()">
+        <p id="staffPassError" class="hidden text-xs text-rose-600 font-semibold mt-2 bg-rose-50 py-1.5 px-3 rounded-lg border border-rose-200">
+          ❌ Kata sandi salah, periksa kembali!
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="verifikasiPasswordStaff()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-dolphin-600 hover:from-cyan-600 hover:to-dolphin-700 text-white font-bold text-xs shadow-md transition-all active:scale-95">
+          <i class="fa-solid fa-lock-open mr-1"></i> Buka
+        </button>
+        <button onclick="closeStaffModal()" class="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs transition-all">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="noticeModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white max-w-md w-full rounded-3xl p-6 sm:p-7 border border-sky-200 text-center text-slate-800 shadow-2xl relative">
+      <div id="noticeIconBox" class="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center text-3xl mx-auto mb-3 shadow-sm">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 id="noticeTitle" class="font-toy text-xl font-bold text-slate-800 mb-2">Pemberitahuan Pendaftaran</h3>
+      <div id="noticeMessage" class="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
+        Pesan peringatan validasi akan tampil di sini.
+      </div>
+
+      <!-- Kotak Rincian Data Duplikat -->
+      <div id="duplicateInfoBox" class="hidden my-3 p-4 rounded-2xl bg-sky-50 border border-sky-200 text-left">
+        <div class="text-[11px] font-bold text-cyan-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-id-card text-cyan-600"></i> Data Pelanggan Terdaftar:
+        </div>
+        <div class="space-y-1.5 text-xs text-slate-700">
+          <p><span class="text-slate-500">Nama:</span> <b id="dupNama" class="text-slate-900 capitalize">-</b></p>
+          <p><span class="text-slate-500">Nomor Undian:</span> <span id="dupNomor" class="font-toy font-bold text-amber-800 text-sm tracking-wider px-2 py-0.5 rounded bg-amber-100 border border-amber-300">DLP-XXXX</span></p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2.5 mt-5">
+        <button id="btnViewOldTicket" onclick="viewExistingTicket()" class="hidden flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95">
+          <i class="fa-solid fa-ticket mr-1"></i> Buka Kupon Saya
+        </button>
+        <button onclick="closeNoticeModal()" class="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all">
+          Mengerti & Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="flex-grow w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 flex flex-col items-center justify-center">
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: FORM PELANGGAN (VIEW DEFAULT)                             -->
+    <!-- ================================================================= -->
+    <section id="tab-register" class="w-full max-w-xl transition-all duration-300">
+      
+      <!-- FORM CARD CONTAINER -->
+      <div id="formSectionContainer" class="glass-card rounded-3xl overflow-hidden shadow-xl relative border-2 border-sky-100">
+        
+        <!-- Header Banner Form -->
+        <div class="bg-gradient-to-br from-cyan-500 via-sky-500 to-dolphin-600 p-6 sm:p-7 text-center text-white relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/15 blur-xl pointer-events-none"></div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-[11px] font-bold tracking-wider uppercase mb-2 shadow-sm">
+            <span>🐬 DOLPHINSTORE OFFICIAL</span>
+          </div>
+          <h2 class="font-toy text-2xl sm:text-3xl font-bold tracking-wide drop-shadow-sm">
+            Form Pendaftaran Kupon Undian
+          </h2>
+          <p class="text-xs sm:text-sm text-cyan-50 mt-1 max-w-md mx-auto leading-relaxed">
+            Daftarkan diri Anda untuk bergabung bersama Dolphinstore dan dapatkan kupon undian berhadiah resmi!
+          </p>
+        </div>
+
+        <form id="regForm" class="p-6 sm:p-8 space-y-4">
+          
+          <!-- 1. Nama Lengkap -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-user text-cyan-600"></i>
+              <span>Nama Lengkap <span class="text-rose-500">*</span></span>
+            </label>
+            <input type="text" name="nama" id="inputNama" required placeholder="Contoh: Amar Wildan" class="w-full py-3 px-4 rounded-xl border border-slate-300 bg-slate-50/70 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all">
+          </div>
+
+          <!-- 2. Jenis Kelamin -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-venus-mars text-cyan-600"></i>
+              <span>Jenis Kelamin <span class="text-rose-500">*</span></span>
+            </label>
+            <select name="jk" id="inputJk" required class="w-full py-3 px-4 rounded-xl border border-slate-300 bg-slate-50/70 text-sm font-medium text-slate-800 focus:outline-none focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all">
+              <option value="">-- Pilih Jenis Kelamin --</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+
+          <!-- 3. Tanggal Lahir -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-cake-candles text-cyan-600"></i>
+              <span>Tanggal Lahir <span class="text-rose-500">*</span></span>
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <select id="selTgl" required class="py-2.5 px-3 rounded-xl border border-slate-300 bg-slate-50/70 text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500">
+                <option value="">Tgl</option>
+              </select>
+              <select id="selBln" required class="py-2.5 px-3 rounded-xl border border-slate-300 bg-slate-50/70 text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500">
+                <option value="">Bulan</option>
+              </select>
+              <select id="selThn" required class="py-2.5 px-3 rounded-xl border border-slate-300 bg-slate-50/70 text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500">
+                <option value="">Tahun</option>
+              </select>
+            </div>
+            <input type="hidden" name="tgl_lahir" id="tgl_lahir_hidden">
+          </div>
+
+          <!-- 4. Nomor WhatsApp -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
+                <span>Nomor WhatsApp <span class="text-rose-500">*</span></span>
+              </span>
+              <span class="text-[11px] font-normal text-slate-500">Wajib diawali 08 (Min 10 digit)</span>
+            </label>
+            <input type="tel" name="wa" id="inputWa" required placeholder="Contoh: 081234567890" maxlength="15" class="w-full py-3 px-4 rounded-xl border border-slate-300 bg-slate-50/70 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all">
+          </div>
+
+          <!-- 5. Alamat Domisili Bertingkat -->
+          <div class="space-y-3 pt-1">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-map-location-dot text-cyan-600"></i>
+              <span>Alamat Domisili Lengkap <span class="text-rose-500">*</span></span>
+            </label>
+
+            <!-- Provinsi -->
+            <select id="provinsi" name="provinsi" required class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 bg-slate-50/70 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500">
+              <option value="">Memuat data provinsi...</option>
+            </select>
+
+            <!-- Kabupaten / Kota -->
+            <select id="kabupaten" name="kabupaten" required disabled class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 bg-slate-50/70 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500 disabled:opacity-50">
+              <option value="">Pilih Provinsi terlebih dahulu</option>
+            </select>
+
+            <!-- Kecamatan -->
+            <select id="kecamatan" name="kecamatan" required disabled class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 bg-slate-50/70 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500 disabled:opacity-50">
+              <option value="">Pilih Kabupaten terlebih dahulu</option>
+            </select>
+
+            <!-- Desa / Kelurahan -->
+            <select id="desa" name="desa" required disabled class="w-full py-2.5 px-3.5 rounded-xl border border-slate-300 bg-slate-50/70 text-xs sm:text-sm font-medium text-slate-800 focus:outline-none focus:border-cyan-500 disabled:opacity-50">
+              <option value="">Pilih Kecamatan terlebih dahulu</option>
+            </select>
+          </div>
+
+          <!-- Bagian Follow & Rating (Disembunyikan Sementara & Bersifat Opsional) -->
+          <div id="socialSectionContainer" class="hidden pt-3 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-heart text-rose-500"></i>
+                <span>Follow & Rating (Opsional)</span>
+              </label>
+              <span id="socialCounterBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+                0 / 5 Diklik
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-3">
+              Kunjungi dan ikuti akun resmi Dolphinstore:
+            </p>
+
+            <!-- Grid 5 Sosmed Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              
+              <!-- 1. Instagram -->
+              <a href="https://www.instagram.com/dolphintoys.official?stkn=YXRmejFra3c1Z2dk" target="_blank" rel="noopener noreferrer" onclick="recordSocialClick('ig')" id="cardSocial_ig" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between shadow-sm group">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-brands fa-instagram"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate leading-tight">Follow Instagram</p>
+                    <p class="text-[10px] text-slate-500 truncate">@dolphintoys.official</p>
+                  </div>
+                </div>
+                <span id="badgeSocial_ig" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200 flex-shrink-0">
+                  Klik
+                </span>
+              </a>
+
+              <!-- 2. TikTok -->
+              <a href="https://www.tiktok.com/@dolphintoys.official?_r=1&_t=ZS-99bhyc3FIcJ" target="_blank" rel="noopener noreferrer" onclick="recordSocialClick('tt')" id="cardSocial_tt" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between shadow-sm group">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-brands fa-tiktok"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate leading-tight">Follow TikTok</p>
+                    <p class="text-[10px] text-slate-500 truncate">@dolphintoys.official</p>
+                  </div>
+                </div>
+                <span id="badgeSocial_tt" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200 flex-shrink-0">
+                  Klik
+                </span>
+              </a>
+
+              <!-- 3. Saluran WhatsApp -->
+              <a href="https://whatsapp.com/channel/0029VarlEhiGpLHIjYCiNl0i" target="_blank" rel="noopener noreferrer" onclick="recordSocialClick('wa_ch')" id="cardSocial_wa_ch" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between shadow-sm group">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-brands fa-whatsapp"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate leading-tight">Saluran WhatsApp</p>
+                    <p class="text-[10px] text-slate-500 truncate">Channel Resmi</p>
+                  </div>
+                </div>
+                <span id="badgeSocial_wa_ch" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200 flex-shrink-0">
+                  Klik
+                </span>
+              </a>
+
+              <!-- 4. Facebook -->
+              <a href="https://www.facebook.com/share/1DeFdhTtmj/" target="_blank" rel="noopener noreferrer" onclick="recordSocialClick('fb')" id="cardSocial_fb" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between shadow-sm group">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-brands fa-facebook"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate leading-tight">Follow Facebook</p>
+                    <p class="text-[10px] text-slate-500 truncate">Dolphinstore</p>
+                  </div>
+                </div>
+                <span id="badgeSocial_fb" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200 flex-shrink-0">
+                  Klik
+                </span>
+              </a>
+
+              <!-- 5. Rating Google Maps -->
+              <a href="https://maps.app.goo.gl/d1P4SJjzhjXYLNCw5" target="_blank" rel="noopener noreferrer" onclick="recordSocialClick('maps')" id="cardSocial_maps" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-between shadow-sm group sm:col-span-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-star"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate leading-tight">Rating Bintang 5 Google Maps</p>
+                    <p class="text-[10px] text-slate-500 truncate">Dolphinstore Toys Review</p>
+                  </div>
+                </div>
+                <span id="badgeSocial_maps" class="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200 flex-shrink-0">
+                  Klik
+                </span>
+              </a>
+
+            </div>
+          </div>
+
+          <!-- Tombol Submit Form -->
+          <button type="submit" id="btnSubmitForm" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-dolphin-600 hover:from-cyan-600 hover:to-dolphin-700 text-white font-toy text-base font-bold tracking-wide shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 active:scale-95 transition-all mt-4">
+            <span>DAFTAR SEKARANG</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+
+        </form>
+      </div>
+
+      <div id="successSectionContainer" class="hidden glass-card rounded-3xl overflow-hidden shadow-xl p-6 sm:p-9 text-center border-2 border-cyan-300">
+        
+        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <h3 class="font-toy text-2xl sm:text-3xl font-bold text-slate-800 mb-1">
+          Pendaftaran Berhasil! 🎉
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-600 max-w-sm mx-auto mb-6">
+          Selamat! Data Anda telah tercatat resmi di sistem Dolphinstore. Simpan bukti kupon undian berhadiah Anda berikut:
+        </p>
+
+        <!-- KUPON UNDIAN BERHADIAH RESMI -->
+        <div class="relative max-w-sm mx-auto rounded-3xl p-6 bg-gradient-to-br from-cyan-500 via-sky-600 to-dolphin-700 text-white shadow-xl glow-cyan border-2 border-white/40 overflow-hidden mb-6">
+          
+          <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 blur-md pointer-events-none"></div>
+          
+          <div class="flex items-center justify-between border-b border-white/20 pb-3 mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🐬</span>
+              <span class="font-toy font-bold text-sm tracking-wider">DOLPHINSTORE</span>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-slate-900 uppercase">
+              Kupon Resmi
+            </span>
+          </div>
+
+          <p class="text-[11px] font-bold text-cyan-200 uppercase tracking-widest mb-1">Nomor Undian Anda</p>
+          <div id="successCouponNumber" class="text-4xl sm:text-5xl font-toy font-bold text-yellow-300 tracking-widest drop-shadow text-glow py-1">
+            DLP-1001
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-white/20 text-left space-y-1">
+            <p class="text-xs text-cyan-100">Nama : <b id="successCustomerName" class="text-white capitalize">-</b></p>
+            <p class="text-xs text-cyan-100">WhatsApp : <b id="successCustomerWa" class="text-white">-</b></p>
+            <p class="text-[10px] text-cyan-200/80">Waktu Daftar : <span id="successRegisteredTime">-</span></p>
+          </div>
+        </div>
+
+        <!-- Tombol Konfirmasi WhatsApp Admin -->
+        <button onclick="kirimKonfirmasiWhatsAppAdmin()" class="w-full max-w-sm mx-auto py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <i class="fa-brands fa-whatsapp text-xl"></i>
+          <span>Konfirmasi ke Admin WhatsApp</span>
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: HALAMAN UNDIAN (TEMA TERANG DENGAN SLOT DISPLAY SELEKTIF)   -->
+    <!-- ================================================================= -->
+    <section id="tab-undian" class="hidden w-full max-w-6xl transition-all duration-300">
+      
+      <!-- Ambient Light Container -->
+      <div class="relative w-full rounded-3xl p-4 sm:p-8 bg-white/95 backdrop-blur-md border border-sky-200 shadow-xl glow-cyan">
+        
+        <!-- Header Lucky Draw -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-sky-100">
+          <div class="flex items-center gap-3">
+            <img src="Logo.png" alt="Dolphinstore Logo" class="w-12 h-12 object-contain rounded-2xl flex-shrink-0 shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/48x48/0284c7/ffffff?text=🐬';">
+            <div>
+              <h2 class="font-toy text-2xl sm:text-3xl font-bold tracking-wide text-slate-900">Dolphinstore Lucky Draw</h2>
+              <p class="text-xs text-sky-600 font-medium">Pengundian Kupon Berhadiah Resmi Dolphinstore</p>
+            </div>
+          </div>
+
+          <!-- Quick Audio & Fullscreen Buttons -->
+          <div class="flex items-center gap-2">
+            <button id="btnSound" onclick="toggleAudio()" class="px-3 py-2 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all text-cyan-800">
+              <i class="fa-solid fa-volume-high text-cyan-600"></i>
+              <span id="soundLabel">Sound ON</span>
+            </button>
+            <button onclick="toggleFullscreen()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-700">
+              <i class="fa-solid fa-expand text-amber-600"></i>
+              <span>Fullscreen</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 items-start">
+          
+          <!-- Left Column: The Machine Slot -->
+          <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Machine Box Screen -->
+            <div class="bg-gradient-to-b from-sky-50/70 via-white to-sky-50/50 rounded-3xl p-6 sm:p-10 border border-sky-200 relative overflow-hidden flex flex-col items-center justify-center min-h-[300px] shadow-inner">
+              
+              <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-10 bg-cyan-400/20 rounded-full blur-xl pointer-events-none"></div>
+
+              <!-- Shutter Tunnel Display Kontras Tinggi -->
+              <div class="w-full max-w-xl py-8 px-4 rounded-2xl bg-gradient-to-b from-slate-900 to-sky-950 border-2 border-cyan-400/40 text-center relative overflow-hidden shadow-2xl">
+                <div class="text-xs uppercase tracking-widest font-bold text-cyan-300 mb-2 flex items-center justify-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                  <span id="drawTargetRankBadge" class="bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 px-3 py-0.5 rounded-full">
+                    MENGUNDI: HADIAH 6
+                  </span>
+                </div>
+
+                <!-- Number Display -->
+                <div id="drawNumber" class="text-4xl sm:text-6xl md:text-7xl font-toy font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-100 to-yellow-300 drop-shadow text-glow py-2">
+                  DLP-XXXX
+                </div>
+
+                <!-- Name Display -->
+                <div id="drawName" class="text-base sm:text-xl font-bold text-slate-100 capitalize truncate mt-1">
+                  Siap Melakukan Pengundian
+                </div>
+
+                <!-- Status Indikator Mengacak (Tanpa Bar Loading & Countdown Detik) -->
+                <div id="drawStatusIndicator" class="hidden mt-3 text-xs font-bold text-cyan-300 flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                  <span>Mengacak kupon peserta...</span>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="w-full max-w-md mt-6 flex gap-3">
+                <button id="btnStartDraw" onclick="startLuckyDraw()" class="flex-grow py-4 px-5 rounded-2xl bg-gradient-to-r from-cyan-500 via-dolphin-600 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-toy text-base font-bold shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                  <i class="fa-solid fa-play"></i>
+                  <span id="btnStartDrawText">MULAI UNDIAN (HADIAH 6)</span>
+                </button>
+
+                <button onclick="resetLuckyDraw()" class="py-4 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-center gap-1.5 active:scale-95 transition-all flex-shrink-0">
+                  <i class="fa-solid fa-rotate-left"></i>
+                  <span>RESET</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-white rounded-2xl p-4 text-center border border-sky-100 shadow-sm">
+                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Peserta</span>
+                <span id="statTotalPeserta" class="text-2xl sm:text-3xl font-toy font-bold text-cyan-600">0</span>
+              </div>
+              <div class="bg-white rounded-2xl p-4 text-center border border-sky-100 shadow-sm">
+                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Tersedia</span>
+                <span id="statTersediaPeserta" class="text-2xl sm:text-3xl font-toy font-bold text-amber-500">0</span>
+              </div>
+              <div class="bg-white rounded-2xl p-4 text-center border border-sky-100 shadow-sm">
+                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Pemenang</span>
+                <span id="statTotalPemenang" class="text-2xl sm:text-3xl font-toy font-bold text-emerald-600">0 / 6</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Winner List (6 Pemenang Log) -->
+          <div class="lg:col-span-4 bg-sky-50/50 rounded-3xl p-5 border border-sky-200/80 flex flex-col justify-between min-h-[380px] shadow-sm">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-sky-200 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-amber-500 text-lg">🏆</span>
+                  <h3 class="font-toy text-base font-bold text-slate-800">Daftar Pemenang</h3>
+                </div>
+                <button onclick="exportWinnersCSV()" class="text-[11px] font-bold px-2.5 py-1 bg-white hover:bg-slate-100 rounded-lg text-slate-700 border border-sky-200 shadow-sm flex items-center gap-1 transition-all">
+                  <i class="fa-solid fa-download"></i> CSV
+                </button>
+              </div>
+
+              <!-- Dynamic Winner Cards -->
+              <div id="winnerListContainer" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                <div id="emptyWinnerMsg" class="py-10 text-center text-slate-400">
+                  <div class="text-3xl mb-2">🎁</div>
+                  <p class="text-xs font-semibold text-slate-600">Belum Ada Pemenang</p>
+                  <p class="text-[10px] text-slate-400">Klik 'Mulai Undian' untuk mengundi Hadiah 6 terlebih dahulu!</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-sky-200 text-center">
+              <p class="text-[10px] text-slate-500 font-medium">Urutan: Hadiah 6 ➔ 5 ➔ 4 ➔ 3 ➔ 2 ➔ Hadiah Utama</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <div id="winModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+      <div class="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 text-center border-2 border-cyan-400 glow-cyan text-slate-800 shadow-2xl relative">
+        
+        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-300 via-amber-400 to-yellow-500 text-slate-900 flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg animate-bounce">
+          👑
+        </div>
+        
+        <span id="modalWinRank" class="inline-block px-3.5 py-1 bg-yellow-400 text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider mb-2 shadow-sm">
+          HADIAH 6
+        </span>
+        <h3 class="font-toy text-2xl font-bold text-slate-900">SELAMAT KEPADA PEMENANG!</h3>
+
+        <div class="my-5 p-5 rounded-2xl bg-sky-50 border border-sky-200">
+          <div id="modalWinNumber" class="text-4xl font-toy font-bold text-cyan-600 tracking-widest drop-shadow-sm mb-1">
+            DLP-1001
+          </div>
+          <div id="modalWinName" class="text-xl font-bold text-slate-800 capitalize">
+            Nama Pemenang
+          </div>
+        </div>
+
+        <!-- 2 Tombol Keputusan -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-6">
+          <button onclick="disqualifyAndRetryWinner()" class="w-full py-3.5 px-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95">
+            <i class="fa-solid fa-rotate-left text-rose-500"></i>
+            <span>Ulangi (Gugur/Batal)</span>
+          </button>
+          <button onclick="claimAndContinueWinner()" class="w-full py-3.5 px-3.5 bg-gradient-to-r from-cyan-500 to-dolphin-600 hover:from-cyan-600 hover:to-dolphin-700 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Klaim & Lanjutkan</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: DASHBOARD STAFF (TEMA TERANG BERSIH & RESPONSIF)          -->
+    <!-- ================================================================= -->
+    <section id="tab-dashboard" class="hidden w-full max-w-7xl transition-all duration-300">
+      <div class="bg-white rounded-3xl p-4 sm:p-7 border border-sky-200 text-slate-800 shadow-xl">
+        
+        <!-- Header Dashboard Staff -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-sky-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-cyan-600 text-xl">📊</span>
+              <h2 class="font-toy text-xl sm:text-2xl font-bold text-slate-900">Database Pelanggan Dolphinstore</h2>
+            </div>
+            <p class="text-xs text-slate-500">Kelola data pelanggan, tautan WhatsApp, dan ekspor data secara praktis.</p>
+          </div>
+
+          <!-- Tombol Aksi Atas Dashboard -->
+          <div class="flex items-center flex-wrap gap-2 w-full sm:w-auto">
+            <button id="btnBulkDelete" onclick="deleteSelectedCustomers()" class="hidden px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-trash-can"></i>
+              <span id="bulkDeleteLabel">Hapus Terpilih (0)</span>
+            </button>
+            <button onclick="exportCustomersCSV()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-file-excel"></i>
+              <span>Export CSV</span>
+            </button>
+            <button onclick="fetchCustomersData()" class="px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-slate-700 text-xs font-bold transition-all" title="Refresh Data">
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Bar Dashboard -->
+        <div class="mt-4 mb-5 flex flex-col sm:flex-row gap-3 items-center justify-between">
+          <div class="relative w-full sm:w-80">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="dashboardSearchInput" oninput="handleCustomerSearch(this.value)" placeholder="Cari nama, WA, atau nomor undian..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-sky-50/70 border border-sky-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-cyan-500 transition-all">
+          </div>
+          <div class="text-xs text-slate-500">
+            Total Terdaftar: <b id="dashboardTotalCount" class="text-cyan-700 font-toy text-sm">0</b> Orang
+          </div>
+        </div>
+
+        <!-- Desktop Table View (No Horizontal Scroll) -->
+        <div class="hidden lg:block w-full">
+          <table class="w-full text-left border-collapse table-fixed text-xs">
+            <thead>
+              <tr class="border-b border-sky-200 bg-sky-50/80 text-sky-900 uppercase font-bold text-[11px] tracking-wider">
+                <th class="py-3 px-3 w-12 text-center">
+                  <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-cyan-600 cursor-pointer accent-cyan-600">
+                </th>
+                <th class="py-3 px-2 w-12 text-center">No</th>
+                <th class="py-3 px-3 w-28">Kupon</th>
+                <th class="py-3 px-3 w-44">Nama & JK</th>
+                <th class="py-3 px-3 w-36">WhatsApp</th>
+                <th class="py-3 px-3 w-28">Tgl Lahir</th>
+                <th class="py-3 px-3">Alamat Domisili</th>
+                <th class="py-3 px-3 w-28">Waktu Daftar</th>
+                <th class="py-3 px-2 w-20 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="desktopTableBody" class="divide-y divide-slate-100 font-medium">
+              <!-- Baris data dimuat lewat JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div id="mobileCardContainer" class="lg:hidden space-y-3">
+          <!-- Kartu data mobile dimuat lewat JavaScript -->
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div id="editCustomerModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white max-w-md w-full rounded-3xl p-6 border border-sky-200 text-slate-800 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+        <h3 class="font-toy text-lg font-bold text-sky-800 flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-cyan-600"></i> Edit Data Pelanggan
+        </h3>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="editForm" onsubmit="saveCustomerEdit(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="editCustomerId">
+        
+        <div>
+          <label class="block text-slate-700 font-bold mb-1">Nomor Undian (Tetap)</label>
+          <input type="text" id="editNomorUndian" disabled class="w-full py-2 px-3 rounded-lg bg-slate-100 text-amber-700 font-toy font-bold border border-slate-200">
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-bold mb-1">Nama Lengkap</label>
+          <input type="text" id="editNama" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white focus:border-cyan-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Jenis Kelamin</label>
+            <select id="editJk" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white">
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Tanggal Lahir</label>
+            <input type="date" id="editTglLahir" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-bold mb-1">Nomor WhatsApp</label>
+          <input type="tel" id="editWa" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white focus:border-cyan-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Provinsi</label>
+            <input type="text" id="editProvinsi" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Kabupaten/Kota</label>
+            <input type="text" id="editKabupaten" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Kecamatan</label>
+            <input type="text" id="editKecamatan" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1">Desa/Kelurahan</label>
+            <input type="text" id="editDesa" required class="w-full py-2 px-3 rounded-lg bg-sky-50/70 border border-slate-300 text-slate-800 focus:outline-none focus:bg-white">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="closeEditModal()" class="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">
+            Batal
+          </button>
+          <button type="submit" class="py-2 px-5 rounded-xl bg-gradient-to-r from-cyan-500 to-dolphin-600 text-white font-bold text-xs shadow-md">
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white max-w-sm w-full rounded-2xl p-6 border border-slate-200 text-center text-slate-800 shadow-2xl">
+      <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center text-xl mx-auto mb-3">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h4 id="confirmModalTitle" class="font-toy text-lg font-bold mb-1 text-slate-900">Konfirmasi</h4>
+      <p id="confirmModalMsg" class="text-xs text-slate-600 mb-5 leading-relaxed">Apakah Anda yakin ingin melanjutkan?</p>
+      <div class="flex gap-2 justify-center">
+        <button onclick="closeConfirmModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex-1">
+          Batal
+        </button>
+        <button id="btnConfirmExecute" class="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex-1 shadow-md">
+          Ya, Lanjutkan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer ondblclick="toggleNavBar()" title="Klik 2x untuk menampilkan/menyembunyikan navigasi atas (Shortcut Staf)" class="w-full text-center py-4 border-t border-sky-200 bg-white/80 text-slate-500 text-[11px] mt-auto select-none cursor-default">
+    <p>&copy; 2026 <b>Dolphinstore Official</b>.</p>
+  </footer>
+
+  <!-- ================================================================= -->
+  <!-- JAVASCRIPT ENGINE & LOGIC (FUNGSI TETAP UTUH & TERJAGA)           -->
+  <!-- ================================================================= -->
+  <script>
+    const DEFAULT_SUPABASE_URL = "https://vwgayplwkvongbvzcbie.supabase.co";
+    const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3Z2F5cGx3a3ZvbmdidnpjYmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDI3NTIsImV4cCI6MjEwNDU3ODc1Mn0.jEz2Vm6tgLzduvmokn7tuWn6NrkTcWrWBbBCs2HT3RE";
+
+    let supabaseClient = null;
+
+    function initSupabase() {
+      try {
+        localStorage.removeItem("supabase_url");
+        localStorage.removeItem("supabase_key");
+        supabaseClient = window.supabase.createClient(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
+      } catch (err) {
+        console.warn("Koneksi Supabase otomatis beralih ke mode offline.", err);
+      }
+    }
+
+    // Status Tab Navigasi Aktif
+    let currentTab = 'tab-register';
+    let isStaffAuthenticated = false;
+
+    // Data Pelanggan & Dashboard
+    let allCustomers = [];
+    let selectedCustomerIds = new Set();
+
+    // Data Pengundian (Lucky Draw)
+    let drawCandidates = [];
+    let drawAvailable = [];
+    let drawWinners = [];
+    let isDrawing = false;
+    let pendingWinner = null;
+    let disqualifiedNumbers = new Set();
+
+    // Urutan Pengundian: Hadiah 6 terlebih dahulu hingga Hadiah Utama
+    const RANKS_ORDER = [
+      "Hadiah 6",
+      "Hadiah 5",
+      "Hadiah 4",
+      "Hadiah 3",
+      "Hadiah 2",
+      "Hadiah Utama"
+    ];
+
+    // Status Klik Wajib 5 Akun Sosmed
+    const socialClicked = {
+      ig: false,
+      tt: false,
+      wa_ch: false,
+      fb: false,
+      maps: false
+    };
+
+    let latestRegisteredCustomer = null;
+
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTick() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function playDecelTone() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(420, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    function playFanfare() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const playTone = (freq, start, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.2, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + duration - 0.02);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + duration);
+        };
+        playTone(523.25, now, 0.12);
+        playTone(659.25, now + 0.12, 0.12);
+        playTone(783.99, now + 0.24, 0.12);
+        playTone(1046.50, now + 0.36, 0.5);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const soundLabel = document.getElementById("soundLabel");
+      const btnSound = document.getElementById("btnSound");
+      if (audioEnabled) {
+        soundLabel.innerText = "Sound ON";
+        btnSound.className = "px-3 py-2 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all text-cyan-800";
+        showToast("Audio suara diaktifkan!", "success");
+      } else {
+        soundLabel.innerText = "Sound OFF";
+        btnSound.className = "px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all text-slate-500";
+        showToast("Audio dinonaktifkan.", "info");
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(message, type = "info", title = "Informasi") {
+      clearTimeout(toastTimer);
+      const toast = document.getElementById("toast");
+      const titleEl = document.getElementById("toastTitle");
+      const msgEl = document.getElementById("toastMsg");
+      const iconEl = document.getElementById("toastIcon");
+
+      titleEl.innerText = title;
+      msgEl.innerText = message;
+
+      if (type === "success") {
+        iconEl.className = "w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0";
+        iconEl.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+      } else if (type === "error") {
+        iconEl.className = "w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg flex-shrink-0";
+        iconEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+      } else {
+        iconEl.className = "w-9 h-9 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg flex-shrink-0";
+        iconEl.innerHTML = `<i class="fa-solid fa-circle-info"></i>`;
+      }
+
+      toast.classList.remove("translate-x-96", "opacity-0");
+      toastTimer = setTimeout(() => {
+        toast.classList.add("translate-x-96", "opacity-0");
+      }, 4500);
+    }
+
+    let confirmCallback = null;
+    function openConfirm(title, msg, onConfirm) {
+      document.getElementById("confirmModalTitle").innerText = title;
+      document.getElementById("confirmModalMsg").innerText = msg;
+      confirmCallback = onConfirm;
+      document.getElementById("btnConfirmExecute").onclick = () => {
+        if (confirmCallback) confirmCallback();
+        closeConfirmModal();
+      };
+      document.getElementById("confirmModal").classList.remove("hidden");
+      document.getElementById("confirmModal").classList.add("flex");
+    }
+
+    function closeConfirmModal() {
+      document.getElementById("confirmModal").classList.add("hidden");
+      document.getElementById("confirmModal").classList.remove("flex");
+      confirmCallback = null;
+    }
+
+    function showNoticeModal(title, message, isDuplicate = false, dupNama = "", dupNomor = "") {
+      const modal = document.getElementById("noticeModal");
+      const titleEl = document.getElementById("noticeTitle");
+      const msgEl = document.getElementById("noticeMessage");
+      const dupBox = document.getElementById("duplicateInfoBox");
+      const btnViewOld = document.getElementById("btnViewOldTicket");
+
+      if (titleEl) titleEl.innerText = title;
+      if (msgEl) msgEl.innerHTML = message;
+
+      if (isDuplicate) {
+        if (dupBox) dupBox.classList.remove("hidden");
+        if (document.getElementById("dupNama")) document.getElementById("dupNama").innerText = dupNama;
+        if (document.getElementById("dupNomor")) document.getElementById("dupNomor").innerText = dupNomor;
+        if (btnViewOld) {
+          btnViewOld.classList.remove("hidden");
+          btnViewOld.onclick = () => {
+            closeNoticeModal();
+            displaySuccessTicket({
+              nomor_undian: dupNomor,
+              nama: dupNama,
+              wa: "",
+              created_at: new Date().toISOString()
+            });
+          };
+        }
+      } else {
+        if (dupBox) dupBox.classList.add("hidden");
+        if (btnViewOld) btnViewOld.classList.add("hidden");
+      }
+
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+    }
+
+    function closeNoticeModal() {
+      const modal = document.getElementById("noticeModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    }
+
+    function switchTab(tabId) {
+      ['tab-register', 'tab-undian', 'tab-dashboard'].forEach(id => {
+        const el = document.getElementById(id);
+        const navEl = document.getElementById('nav-' + id.replace('tab-', ''));
+        if (id === tabId) {
+          el.classList.remove('hidden');
+          if (navEl) {
+            navEl.className = "px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 bg-gradient-to-r from-cyan-500 to-dolphin-600 text-white shadow-md";
+          }
+        } else {
+          el.classList.add('hidden');
+          if (navEl) {
+            navEl.className = "px-3 sm:px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-600 hover:text-sky-700 hover:bg-white/80";
+          }
+        }
+      });
+      currentTab = tabId;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabId === 'tab-undian') {
+        initUndianData();
+      } else if (tabId === 'tab-dashboard') {
+        fetchCustomersData();
+      }
+    }
+
+    function openDashboardSafe() {
+      if (isStaffAuthenticated) {
+        switchTab('tab-dashboard');
+      } else {
+        document.getElementById("staffPasswordInput").value = "";
+        document.getElementById("staffPassError").classList.add("hidden");
+        document.getElementById("staffAuthModal").classList.remove("hidden");
+        document.getElementById("staffAuthModal").classList.add("flex");
+        setTimeout(() => document.getElementById("staffPasswordInput").focus(), 150);
+      }
+    }
+
+    function closeStaffModal() {
+      document.getElementById("staffAuthModal").classList.add("hidden");
+      document.getElementById("staffAuthModal").classList.remove("flex");
+    }
+
+    async function verifikasiPasswordStaff() {
+      const pass = document.getElementById("staffPasswordInput").value;
+      const errBox = document.getElementById("staffPassError");
+      errBox.classList.add("hidden");
+
+      let isValid = false;
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.rpc('verify_dashboard_password', { input_password: pass });
+          if (!error && typeof data === 'boolean') {
+            isValid = data;
+          }
+        } catch (e) {}
+      }
+
+      if (!isValid && (pass === "dolphinstore2026" || pass === "surcan2025")) {
+        isValid = true;
+      }
+
+      if (isValid) {
+        isStaffAuthenticated = true;
+        closeStaffModal();
+        switchTab('tab-dashboard');
+        showToast("Akses staf berhasil diverifikasi!", "success");
+      } else {
+        errBox.classList.remove("hidden");
+        document.getElementById("staffPasswordInput").value = "";
+        document.getElementById("staffPasswordInput").focus();
+      }
+    }
+
+    function recordSocialClick(platform) {
+      if (socialClicked.hasOwnProperty(platform)) {
+        socialClicked[platform] = true;
+        const badge = document.getElementById("badgeSocial_" + platform);
+        const card = document.getElementById("cardSocial_" + platform);
+        if (badge) {
+          badge.innerText = "✓ Selesai";
+          badge.className = "text-[10px] font-bold px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 border border-emerald-300 flex-shrink-0";
+        }
+        if (card) {
+          card.classList.add("border-emerald-400", "bg-emerald-50/40");
+        }
+        updateSocialCounterBadge();
+      }
+    }
+
+    function updateSocialCounterBadge() {
+      const clickedCount = Object.values(socialClicked).filter(Boolean).length;
+      const counterEl = document.getElementById("socialCounterBadge");
+      if (counterEl) {
+        counterEl.innerText = `${clickedCount} / 5 Diklik`;
+        if (clickedCount === 5) {
+          counterEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300";
+        } else {
+          counterEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300";
+        }
+      }
+    }
+
+    function checkAllSocialsClicked() {
+      const unclicked = [];
+      if (!socialClicked.ig) unclicked.push("Instagram (@dolphintoys.official)");
+      if (!socialClicked.tt) unclicked.push("TikTok (@dolphintoys.official)");
+      if (!socialClicked.wa_ch) unclicked.push("Saluran WhatsApp");
+      if (!socialClicked.fb) unclicked.push("Facebook Dolphinstore");
+      if (!socialClicked.maps) unclicked.push("Rating Bintang 5 Google Maps");
+      return unclicked;
+    }
+
+    function initDateDropdowns() {
+      const tgl = document.getElementById("selTgl");
+      const bln = document.getElementById("selBln");
+      const thn = document.getElementById("selThn");
+      const hiddenInput = document.getElementById("tgl_lahir_hidden");
+
+      for (let i = 1; i <= 31; i++) {
+        tgl.innerHTML += `<option value="${i}">${i}</option>`;
+      }
+      const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      months.forEach((m, idx) => {
+        bln.innerHTML += `<option value="${String(idx + 1).padStart(2, "0")}">${m}</option>`;
+      });
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear; y >= 1945; y--) {
+        thn.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+
+      function updateHiddenDate() {
+        if (tgl.value && bln.value && thn.value) {
+          hiddenInput.value = `${thn.value}-${bln.value}-${String(tgl.value).padStart(2, "0")}`;
+        }
+      }
+      tgl.addEventListener("change", updateHiddenDate);
+      bln.addEventListener("change", updateHiddenDate);
+      thn.addEventListener("change", updateHiddenDate);
+    }
+
+    const REGION_API = "https://www.emsifa.com/api-wilayah-indonesia/api";
+    const provEl = document.getElementById("provinsi");
+    const kabEl = document.getElementById("kabupaten");
+    const kecEl = document.getElementById("kecamatan");
+    const desaEl = document.getElementById("desa");
+
+    async function loadProvinces() {
+      try {
+        const res = await fetch(`${REGION_API}/provinces.json`);
+        const list = await res.json();
+        provEl.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
+        list.forEach(p => {
+          provEl.innerHTML += `<option value="${p.name}" data-id="${p.id}">${p.name}</option>`;
+        });
+      } catch (e) {
+        provEl.innerHTML = '<option value="">Gagal memuat wilayah</option>';
+      }
+    }
+
+    provEl.addEventListener("change", async () => {
+      kabEl.disabled = false; kecEl.disabled = true; desaEl.disabled = true;
+      const opt = provEl.selectedOptions[0];
+      const id = opt ? opt.dataset.id : null;
+      if (!id) return;
+      kabEl.innerHTML = '<option value="">Memuat data kabupaten...</option>';
+      const res = await fetch(`${REGION_API}/regencies/${id}.json`);
+      const list = await res.json();
+      kabEl.innerHTML = '<option value="">-- Pilih Kabupaten/Kota --</option>';
+      list.forEach(k => { kabEl.innerHTML += `<option value="${k.name}" data-id="${k.id}">${k.name}</option>`; });
+    });
+
+    kabEl.addEventListener("change", async () => {
+      kecEl.disabled = false; desaEl.disabled = true;
+      const opt = kabEl.selectedOptions[0];
+      const id = opt ? opt.dataset.id : null;
+      if (!id) return;
+      kecEl.innerHTML = '<option value="">Memuat data kecamatan...</option>';
+      const res = await fetch(`${REGION_API}/districts/${id}.json`);
+      const list = await res.json();
+      kecEl.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+      list.forEach(kc => { kecEl.innerHTML += `<option value="${kc.name}" data-id="${kc.id}">${kc.name}</option>`; });
+    });
+
+    kecEl.addEventListener("change", async () => {
+      desaEl.disabled = false;
+      const opt = kecEl.selectedOptions[0];
+      const id = opt ? opt.dataset.id : null;
+      if (!id) return;
+      desaEl.innerHTML = '<option value="">Memuat data desa...</option>';
+      const res = await fetch(`${REGION_API}/villages/${id}.json`);
+      const list = await res.json();
+      desaEl.innerHTML = '<option value="">-- Pilih Desa/Kelurahan --</option>';
+      list.forEach(v => { desaEl.innerHTML += `<option value="${v.name}">${v.name}</option>`; });
+    });
+
+    const regForm = document.getElementById("regForm");
+    regForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const nama = document.getElementById("inputNama").value.trim();
+      const jk = document.getElementById("inputJk").value;
+      const tgl_lahir = document.getElementById("tgl_lahir_hidden").value;
+      const rawWa = document.getElementById("inputWa").value.trim();
+      const provinsi = provEl.value;
+      const kabupaten = kabEl.value;
+      const kecamatan = kecEl.value;
+      const desa = desaEl.value;
+
+      const cleanWa = rawWa.replace(/[^0-9]/g, "");
+      if (!cleanWa.startsWith("08")) {
+        showNoticeModal(
+          "Format WhatsApp Tidak Sesuai",
+          "Nomor WhatsApp wajib diawali dengan <b>08</b> (Contoh: 081234567890). Harap periksa kembali nomor Anda!"
+        );
+        document.getElementById("inputWa").focus();
+        return;
+      }
+      if (cleanWa.length < 10) {
+        showNoticeModal(
+          "Nomor WhatsApp Terlalu Pendek",
+          `Nomor WhatsApp Anda hanya memiliki <b>${cleanWa.length} digit</b>. Nomor wajib memiliki <b>minimal 10 digit angka</b>.`
+        );
+        document.getElementById("inputWa").focus();
+        return;
+      }
+
+      // Validasi follow & rating dinonaktifkan (opsional) sehingga pendaftaran dapat langsung diproses tanpa syarat klik sosmed
+
+      let duplicateFound = null;
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('customers')
+            .select('*')
+            .or(`wa.eq.${cleanWa},nama.ilike.${nama}`)
+            .limit(1);
+          if (!error && data && data.length > 0) {
+            duplicateFound = data[0];
+          }
+        } catch (err) {}
+      }
+      if (!duplicateFound) {
+        const localList = JSON.parse(localStorage.getItem("dolphinstore_customers") || "[]");
+        duplicateFound = localList.find(c => c.wa === cleanWa || c.nama.toLowerCase() === nama.toLowerCase());
+      }
+
+      if (duplicateFound) {
+        showNoticeModal(
+          "Sudah Pernah Mendaftar!",
+          `Data Anda sudah tercatat sebelumnya di database Dolphinstore. Anda tidak perlu mendaftar ulang.`,
+          true,
+          duplicateFound.nama,
+          duplicateFound.nomor_undian
+        );
+        return;
+      }
+
+      const btnSubmit = document.getElementById("btnSubmitForm");
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Sedang Mendaftarkan...`;
+
+      let nomorUndian = "";
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.rpc('get_next_undian_code');
+          if (!error && data) nomorUndian = data;
+        } catch (e) {}
+      }
+
+      if (!nomorUndian) {
+        const localList = JSON.parse(localStorage.getItem("dolphinstore_customers") || "[]");
+        let maxNum = 1000;
+        localList.forEach(c => {
+          const m = (c.nomor_undian || "").match(/DLP-(\d+)/);
+          if (m) {
+            const val = parseInt(m[1], 10);
+            if (val > maxNum) maxNum = val;
+          }
+        });
+        nomorUndian = `DLP-${maxNum + 1}`;
+      }
+
+      const newCustomer = {
+        nomor_undian: nomorUndian,
+        nama: nama,
+        jk: jk,
+        tgl_lahir: tgl_lahir,
+        wa: cleanWa,
+        provinsi: provinsi,
+        kabupaten: kabupaten,
+        kecamatan: kecamatan,
+        desa: desa,
+        created_at: new Date().toISOString()
+      };
+
+      let saveSuccess = false;
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from('customers').insert([newCustomer]);
+          if (!error) saveSuccess = true;
+        } catch (e) {}
+      }
+
+      const localList = JSON.parse(localStorage.getItem("dolphinstore_customers") || "[]");
+      localList.push(newCustomer);
+      localStorage.setItem("dolphinstore_customers", JSON.stringify(localList));
+
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = `<span>DAFTAR SEKARANG</span> <i class="fa-solid fa-arrow-right"></i>`;
+
+      latestRegisteredCustomer = newCustomer;
+      displaySuccessTicket(newCustomer);
+      showToast("Pendaftaran Anda berhasil dicatat!", "success");
+    });
+
+    function displaySuccessTicket(customer) {
+      document.getElementById("formSectionContainer").classList.add("hidden");
+      document.getElementById("successSectionContainer").classList.remove("hidden");
+      document.getElementById("successCouponNumber").innerText = customer.nomor_undian;
+      document.getElementById("successCustomerName").innerText = customer.nama;
+      document.getElementById("successCustomerWa").innerText = customer.wa || "-";
+
+      let timeStr = new Date().toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).replace(".", ":") + " WIB";
+
+      document.getElementById("successRegisteredTime").innerText = timeStr;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function kirimKonfirmasiWhatsAppAdmin() {
+      if (!latestRegisteredCustomer) return;
+      const c = latestRegisteredCustomer;
+      const pesan = `Halo Admin Dolphinstore 🐬\nSaya telah berhasil mendaftar sebagai pelanggan resmi Dolphinstore.\n\n👤 Nama : ${c.nama}\n📱 WhatsApp : ${c.wa}\n🎟️ Nomor Undian : ${c.nomor_undian}\n📍 Alamat : ${c.desa}, ${c.kecamatan}, ${c.kabupaten}, ${c.provinsi}\n\nMohon bantuannya untuk verifikasi kupon saya ya. Terima kasih! ✨`;
+      window.open("https://wa.me/628131310110?text=" + encodeURIComponent(pesan), "_blank");
+    }
+
+    async function initUndianData() {
+      let list = [];
+      if (supabaseClient) {
+        try {
+          const { data } = await supabaseClient.from('customers').select('*').order('created_at', { ascending: true });
+          if (data && data.length > 0) list = data;
+        } catch (e) {}
+      }
+      if (list.length === 0) {
+        list = JSON.parse(localStorage.getItem("dolphinstore_customers") || "[]");
+      }
+
+      drawCandidates = list.map(c => ({
+        nomor: c.nomor_undian || 'DLP-1001',
+        nama: c.nama || 'Pelanggan Dolphinstore'
+      }));
+
+      // Memuat data pemenang dari Supabase, fallback ke localStorage
+      let winnersFromDb = [];
+      if (supabaseClient) {
+        try {
+          const { data: dbWinners, error } = await supabaseClient
+            .from('winners')
+            .select('*')
+            .order('created_at', { ascending: true });
+          if (!error && dbWinners) {
+            winnersFromDb = dbWinners.map(w => ({
+              id: w.id,
+              rank: w.rank,
+              nomor: w.nomor,
+              nama: w.nama,
+              time: w.time || (w.created_at ? new Date(w.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-')
+            }));
+          }
+        } catch (err) {
+          console.warn("Gagal memuat pemenang dari Supabase:", err);
+        }
+      }
+
+      if (winnersFromDb.length > 0) {
+        drawWinners = winnersFromDb;
+        localStorage.setItem("dolphinstore_winners", JSON.stringify(drawWinners));
+      } else {
+        drawWinners = JSON.parse(localStorage.getItem("dolphinstore_winners") || "[]");
+      }
+
+      refreshAvailableDrawList();
+      updateLuckyDrawMetrics();
+      renderWinnerCards();
+      updateDrawTargetRankUI();
+    }
+
+    function getCurrentTargetRank() {
+      // Mendeteksi peringkat yang belum terisi agar tetap akurat meskipun salah satu juara dihapus
+      const claimedRanks = new Set(drawWinners.map(w => w.rank));
+      const nextAvailable = RANKS_ORDER.find(r => !claimedRanks.has(r));
+      return nextAvailable || "Selesai";
+    }
+
+    function updateDrawTargetRankUI() {
+      const targetRank = getCurrentTargetRank();
+      const badge = document.getElementById("drawTargetRankBadge");
+      const btnText = document.getElementById("btnStartDrawText");
+      const btnStart = document.getElementById("btnStartDraw");
+
+      if (drawWinners.length >= 6 || targetRank === "Selesai") {
+        if (badge) badge.innerText = "SEMUA PEMENANG SELESAI (1 s/d 6)";
+        if (btnText) btnText.innerText = "PENGUNDIAN LENGKAP";
+        if (btnStart) {
+          btnStart.disabled = true;
+          btnStart.classList.add("opacity-50", "cursor-not-allowed");
+        }
+      } else {
+        if (badge) badge.innerText = `MENGUNDI: ${targetRank.toUpperCase()}`;
+        if (btnText) btnText.innerText = `MULAI UNDIAN (${targetRank.toUpperCase()})`;
+        if (btnStart) {
+          btnStart.disabled = false;
+          btnStart.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+      }
+    }
+
+    function refreshAvailableDrawList() {
+      const winnerCodes = new Set(drawWinners.map(w => w.nomor));
+      drawAvailable = drawCandidates.filter(c => !winnerCodes.has(c.nomor) && !disqualifiedNumbers.has(c.nomor));
+    }
+
+    function updateLuckyDrawMetrics() {
+      document.getElementById("statTotalPeserta").innerText = drawCandidates.length;
+      document.getElementById("statTersediaPeserta").innerText = drawAvailable.length;
+      document.getElementById("statTotalPemenang").innerText = `${drawWinners.length} / 6`;
+    }
+
+    function startLuckyDraw() {
+      if (isDrawing) return;
+
+      if (drawWinners.length >= 6) {
+        showToast("Batas maksimal 6 pemenang sudah tercapai! Silakan Reset jika ingin mengundi ulang.", "error");
+        return;
+      }
+      if (drawAvailable.length === 0) {
+        showToast("Tidak ada peserta yang tersedia untuk diundi. Pastikan data pelanggan sudah terdaftar!", "error");
+        return;
+      }
+
+      isDrawing = true;
+      const btnStart = document.getElementById("btnStartDraw");
+      btnStart.disabled = true;
+      btnStart.classList.add("opacity-50", "cursor-not-allowed");
+
+      const statusIndicator = document.getElementById("drawStatusIndicator");
+      if (statusIndicator) statusIndicator.classList.remove("hidden");
+
+      const TOTAL_DURATION = 30000;
+      const DECELERATE_AFTER = 23000;
+      const startTime = performance.now();
+      const minDelay = 40;
+      const maxDelay = 700;
+      let currentIndex = 0;
+
+      function stepDraw(currentTime) {
+        const elapsed = currentTime - startTime;
+
+        currentIndex = Math.floor(Math.random() * drawAvailable.length);
+        const cand = drawAvailable[currentIndex];
+        document.getElementById("drawNumber").innerText = cand.nomor;
+        document.getElementById("drawName").innerText = cand.nama;
+
+        if (elapsed >= TOTAL_DURATION) {
+          if (statusIndicator) statusIndicator.classList.add("hidden");
+          const finalCandidate = drawAvailable[currentIndex];
+          finalizeLuckyWinner(finalCandidate);
+        } else {
+          let nextDelay = minDelay;
+          if (elapsed < DECELERATE_AFTER) {
+            playTick();
+            nextDelay = minDelay;
+          } else {
+            playDecelTone();
+            const decelProgress = (elapsed - DECELERATE_AFTER) / (TOTAL_DURATION - DECELERATE_AFTER);
+            nextDelay = minDelay + (maxDelay - minDelay) * Math.pow(decelProgress, 3);
+          }
+          setTimeout(() => {
+            stepDraw(performance.now());
+          }, nextDelay);
+        }
+      }
+
+      stepDraw(performance.now());
+    }
+
+    function finalizeLuckyWinner(winner) {
+      isDrawing = false;
+      const btnStart = document.getElementById("btnStartDraw");
+      btnStart.disabled = false;
+      btnStart.classList.remove("opacity-50", "cursor-not-allowed");
+
+      const currentRank = getCurrentTargetRank();
+      pendingWinner = {
+        rank: currentRank,
+        nomor: winner.nomor,
+        nama: winner.nama,
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      playFanfare();
+      confetti({
+        particleCount: 120,
+        spread: 90,
+        origin: { y: 0.6 }
+      });
+
+      document.getElementById("modalWinRank").innerText = pendingWinner.rank;
+      document.getElementById("modalWinNumber").innerText = pendingWinner.nomor;
+      document.getElementById("modalWinName").innerText = pendingWinner.nama;
+      document.getElementById("winModal").classList.remove("hidden");
+      document.getElementById("winModal").classList.add("flex");
+    }
+
+    function disqualifyAndRetryWinner() {
+      if (!pendingWinner) return;
+      const rejected = pendingWinner;
+      disqualifiedNumbers.add(rejected.nomor);
+
+      pendingWinner = null;
+      closeWinModal();
+      refreshAvailableDrawList();
+      updateLuckyDrawMetrics();
+      updateDrawTargetRankUI();
+
+      showToast(`Peserta ${rejected.nomor} (${rejected.nama}) dibatalkan. Silakan klik Mulai Undian lagi untuk ${rejected.rank}!`, "info");
+    }
+
+    async function claimAndContinueWinner() {
+      if (!pendingWinner) return;
+
+      const newWinner = {
+        rank: pendingWinner.rank,
+        nomor: pendingWinner.nomor,
+        nama: pendingWinner.nama,
+        created_at: new Date().toISOString()
+      };
+
+      // Simpan pemenang ke tabel Supabase
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('winners').insert([newWinner]).select();
+          if (!error && data && data.length > 0) {
+            pendingWinner.id = data[0].id;
+          }
+        } catch (e) {
+          console.warn("Gagal menyimpan pemenang ke Supabase:", e);
+        }
+      }
+
+      drawWinners.push(pendingWinner);
+      localStorage.setItem("dolphinstore_winners", JSON.stringify(drawWinners));
+
+      const claimedRank = pendingWinner.rank;
+      pendingWinner = null;
+      closeWinModal();
+
+      refreshAvailableDrawList();
+      updateLuckyDrawMetrics();
+      renderWinnerCards();
+      updateDrawTargetRankUI();
+
+      showToast(`Selamat! ${claimedRank} berhasil diklaim dan tersimpan di database.`, "success");
+    }
+
+    function closeWinModal() {
+      document.getElementById("winModal").classList.add("hidden");
+      document.getElementById("winModal").classList.remove("flex");
+    }
+
+    function renderWinnerCards() {
+      const container = document.getElementById("winnerListContainer");
+      container.innerHTML = "";
+
+      if (drawWinners.length === 0) {
+        container.innerHTML = `
+          <div class="py-10 text-center text-slate-400">
+            <div class="text-3xl mb-2">🎁</div>
+            <p class="text-xs font-semibold text-slate-600">Belum Ada Pemenang</p>
+            <p class="text-[10px] text-slate-400">Klik 'Mulai Undian' untuk mengundi Hadiah 6 terlebih dahulu!</p>
+          </div>
+        `;
+        return;
+      }
+
+      const sortedWinners = [...drawWinners].sort((a, b) => {
+        const getRankNum = (r) => {
+          if (r.includes("Hadiah Utama")) return 1;
+          if (r.includes("Hadiah 2")) return 2;
+          if (r.includes("Hadiah 3")) return 3;
+          if (r.includes("Hadiah 4")) return 4;
+          if (r.includes("Hadiah 5")) return 5;
+          if (r.includes("Hadiah 6")) return 6;
+          return 99;
+        };
+        return getRankNum(a.rank) - getRankNum(b.rank);
+      });
+
+      sortedWinners.forEach((w) => {
+        const isMainPrize = w.rank.includes("Hadiah Utama");
+        const div = document.createElement("div");
+        div.className = `p-3 rounded-2xl border transition-all flex items-center justify-between shadow-sm ${
+          isMainPrize 
+            ? 'bg-gradient-to-r from-amber-100 to-yellow-50 border-amber-300' 
+            : 'bg-white border-sky-200'
+        }`;
+        div.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl ${isMainPrize ? 'bg-amber-400 text-slate-950 shadow-sm' : 'bg-sky-100 text-sky-700'} font-bold flex items-center justify-center text-xs flex-shrink-0">
+              ${isMainPrize ? '👑' : '⭐'}
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] font-bold ${isMainPrize ? 'text-amber-800 font-extrabold' : 'text-amber-600'} block leading-none mb-1">${w.rank}</span>
+              <h5 class="text-xs font-bold text-slate-900 leading-tight truncate">${w.nomor}</h5>
+              <p class="text-[11px] text-sky-700 capitalize truncate font-medium">${w.nama}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+            <span class="text-[10px] text-slate-400 font-mono">${w.time || ''}</span>
+            <button onclick="deleteSingleWinner('${w.nomor}', '${w.rank}', '${w.id || ''}')" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center transition-all active:scale-95" title="Hapus pemenang ini (jika salah pencet)">
+              <i class="fa-solid fa-trash-can text-[11px]"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteSingleWinner(nomor, rank, id) {
+      openConfirm("Batalkan Pemenang?", `Apakah Anda yakin ingin membatalkan & menghapus pemenang ${rank} (${nomor})? Peserta ini dapat diundi kembali.`, async () => {
+        if (supabaseClient) {
+          try {
+            if (id && id !== 'undefined') {
+              await supabaseClient.from('winners').delete().eq('id', id);
+            } else {
+              await supabaseClient.from('winners').delete().eq('nomor', nomor);
+            }
+          } catch (e) {
+            console.warn("Gagal menghapus pemenang dari Supabase:", e);
+          }
+        }
+
+        drawWinners = drawWinners.filter(w => w.nomor !== nomor);
+        localStorage.setItem("dolphinstore_winners", JSON.stringify(drawWinners));
+
+        refreshAvailableDrawList();
+        updateLuckyDrawMetrics();
+        renderWinnerCards();
+        updateDrawTargetRankUI();
+        showToast(`Pemenang ${rank} (${nomor}) berhasil dihapus dan dapat diundi kembali.`, "info");
+      });
+    }
+
+    function resetLuckyDraw() {
+      openConfirm("Reset Undian?", "Apakah Anda yakin ingin menghapus riwayat pemenang undian ini? Seluruh data pemenang di database akan dihapus dan peserta dapat diundi kembali mulai dari Hadiah 6.", async () => {
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('winners').delete().neq('nomor', '');
+          } catch (e) {
+            console.warn("Gagal mereset pemenang di Supabase:", e);
+          }
+        }
+
+        drawWinners = [];
+        disqualifiedNumbers.clear();
+        pendingWinner = null;
+        localStorage.removeItem("dolphinstore_winners");
+        document.getElementById("drawNumber").innerText = "DLP-XXXX";
+        document.getElementById("drawName").innerText = "Siap Melakukan Pengundian";
+        refreshAvailableDrawList();
+        updateLuckyDrawMetrics();
+        renderWinnerCards();
+        updateDrawTargetRankUI();
+        showToast("Undian berhasil direset ke Hadiah 6!", "success");
+      });
+    }
+
+    function exportWinnersCSV() {
+      if (drawWinners.length === 0) {
+        showToast("Belum ada data pemenang untuk diekspor!", "info");
+        return;
+      }
+      let csv = "Peringkat,Nomor Undian,Nama Pemenang,Waktu Pengundian\n";
+      drawWinners.forEach(w => {
+        csv += `"${w.rank}","${w.nomor}","${w.nama}","${w.time}"\n`;
+      });
+      downloadCSVFile(csv, "Dolphinstore_Pemenang_Undian.csv");
+    }
+
+    async function fetchCustomersData() {
+      let list = [];
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('customers').select('*').order('created_at', { ascending: false });
+          if (!error && data) list = data;
+        } catch (e) {}
+      }
+      if (list.length === 0) {
+        list = JSON.parse(localStorage.getItem("dolphinstore_customers") || "[]");
+        list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      }
+      allCustomers = list;
+      selectedCustomerIds.clear();
+      updateBulkDeleteButton();
+      renderDashboardData(allCustomers);
+    }
+
+    function renderDashboardData(list) {
+      document.getElementById("dashboardTotalCount").innerText = list.length;
+      const desktopTbody = document.getElementById("desktopTableBody");
+      const mobileContainer = document.getElementById("mobileCardContainer");
+
+      desktopTbody.innerHTML = "";
+      mobileContainer.innerHTML = "";
+
+      if (list.length === 0) {
+        const emptyRow = `
+          <tr>
+            <td colspan="9" class="py-12 text-center text-slate-400">
+              <i class="fa-solid fa-users text-3xl mb-2 text-sky-400 block"></i>
+              Belum ada data pelanggan yang sesuai.
+            </td>
+          </tr>
+        `;
+        desktopTbody.innerHTML = emptyRow;
+        mobileContainer.innerHTML = `
+          <div class="py-12 text-center text-slate-400 bg-sky-50 rounded-2xl p-6 border border-sky-100">
+            <i class="fa-solid fa-users text-3xl mb-2 text-sky-400 block"></i>
+            Belum ada data pelanggan yang sesuai.
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach((c, index) => {
+        const customerId = c.id || c.nomor_undian;
+        const isChecked = selectedCustomerIds.has(customerId);
+
+        let regDateStr = "-";
+        if (c.created_at) {
+          const d = new Date(c.created_at);
+          regDateStr = `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+        }
+
+        let birthDateStr = "-";
+        if (c.tgl_lahir) {
+          const parts = c.tgl_lahir.split("-");
+          if (parts.length === 3) birthDateStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        const fullAlamat = `${c.desa || ''}, Kec. ${c.kecamatan || ''}, ${c.kabupaten || ''}, ${c.provinsi || ''}`.replace(/^,\s*|,\s*$/g, '');
+        const waLink = `https://wa.me/62${c.wa ? c.wa.replace(/^0/, '') : ''}`;
+
+        // Render Baris Desktop
+        const tr = document.createElement("tr");
+        tr.className = `hover:bg-sky-50/80 transition-colors border-b border-slate-100 ${isChecked ? 'bg-sky-100/50' : ''}`;
+        tr.innerHTML = `
+          <td class="py-3 px-3 text-center">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSelectCustomer('${customerId}', this.checked)" class="w-4 h-4 rounded text-cyan-600 cursor-pointer accent-cyan-600">
+          </td>
+          <td class="py-3 px-2 text-center text-slate-400 text-[11px]">${index + 1}</td>
+          <td class="py-3 px-3">
+            <span class="font-toy font-bold text-amber-800 text-xs px-2 py-0.5 rounded bg-amber-100 border border-amber-300 whitespace-nowrap">
+              ${c.nomor_undian || 'DLP-XXXX'}
+            </span>
+          </td>
+          <td class="py-3 px-3">
+            <div class="font-bold text-slate-900 text-xs truncate capitalize">${c.nama || '-'}</div>
+            <div class="text-[10px] text-sky-600 font-medium">${c.jk || '-'}</div>
+          </td>
+          <td class="py-3 px-3">
+            <a href="${waLink}" target="_blank" class="inline-flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-mono text-xs font-bold hover:underline">
+              <i class="fa-brands fa-whatsapp text-sm"></i>
+              <span>${c.wa || '-'}</span>
+            </a>
+          </td>
+          <td class="py-3 px-3 text-slate-600 font-mono text-[11px]">${birthDateStr}</td>
+          <td class="py-3 px-3">
+            <div class="text-slate-600 text-xs truncate max-w-xs" title="${fullAlamat}">${fullAlamat}</div>
+          </td>
+          <td class="py-3 px-3 text-slate-500 font-mono text-[10px] whitespace-nowrap">${regDateStr}</td>
+          <td class="py-3 px-2 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openEditCustomerModal('${customerId}')" class="w-7 h-7 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-700 flex items-center justify-center transition-all" title="Edit Data">
+                <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+              </button>
+              <button onclick="deleteSingleCustomer('${customerId}', '${c.nama}')" class="w-7 h-7 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-600 flex items-center justify-center transition-all" title="Hapus Data">
+                <i class="fa-solid fa-trash-can text-[11px]"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        desktopTbody.appendChild(tr);
+
+        // Render Kartu Mobile
+        const card = document.createElement("div");
+        card.className = `p-4 rounded-2xl border transition-all ${isChecked ? 'bg-sky-50 border-cyan-400 shadow-sm' : 'bg-white border-sky-100 shadow-sm'}`;
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-100">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSelectCustomer('${customerId}', this.checked)" class="w-4 h-4 rounded text-cyan-600 cursor-pointer accent-cyan-600 flex-shrink-0">
+              <div class="min-w-0">
+                <h4 class="font-bold text-sm text-slate-900 capitalize truncate">${c.nama || '-'}</h4>
+                <p class="text-[10px] text-sky-600 font-medium">${c.jk || '-'} • Lahir: ${birthDateStr}</p>
+              </div>
+            </div>
+            <span class="font-toy font-bold text-amber-800 text-xs px-2 py-0.5 rounded bg-amber-100 border border-amber-300 flex-shrink-0">
+              ${c.nomor_undian || 'DLP-XXXX'}
+            </span>
+          </div>
+
+          <div class="py-2.5 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">WhatsApp:</span>
+              <a href="${waLink}" target="_blank" class="text-emerald-600 hover:text-emerald-700 font-mono font-bold flex items-center gap-1">
+                <i class="fa-brands fa-whatsapp"></i> ${c.wa || '-'}
+              </a>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">Alamat Domisili:</span>
+              <p class="text-slate-700 text-xs leading-relaxed">${fullAlamat}</p>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+              <span>Waktu Daftar:</span>
+              <span class="font-mono">${regDateStr}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <button onclick="openEditCustomerModal('${customerId}')" class="py-1.5 px-3 rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 text-xs font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-pen-to-square"></i> Edit
+            </button>
+            <button onclick="deleteSingleCustomer('${customerId}', '${c.nama}')" class="py-1.5 px-3 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-200 text-xs font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-trash-can"></i> Hapus
+            </button>
+          </div>
+        `;
+        mobileContainer.appendChild(card);
+      });
+    }
+
+    function handleCustomerSearch(query) {
+      const q = query.toLowerCase().trim();
+      if (!q) {
+        renderDashboardData(allCustomers);
+        return;
+      }
+      const filtered = allCustomers.filter(c => {
+        return (c.nama || '').toLowerCase().includes(q) ||
+               (c.wa || '').includes(q) ||
+               (c.nomor_undian || '').toLowerCase().includes(q) ||
+               (c.kabupaten || '').toLowerCase().includes(q);
+      });
+      renderDashboardData(filtered);
+    }
+
+    function toggleSelectCustomer(id, isChecked) {
+      if (isChecked) {
+        selectedCustomerIds.add(id);
+      } else {
+        selectedCustomerIds.delete(id);
+      }
+      updateBulkDeleteButton();
+      renderDashboardData(allCustomers);
+    }
+
+    function toggleSelectAll(isChecked) {
+      if (isChecked) {
+        allCustomers.forEach(c => selectedCustomerIds.add(c.id || c.nomor_undian));
+      } else {
+        selectedCustomerIds.clear();
+      }
+      updateBulkDeleteButton();
+      renderDashboardData(allCustomers);
+    }
+
+    function updateBulkDeleteButton() {
+      const btn = document.getElementById("btnBulkDelete");
+      const label = document.getElementById("bulkDeleteLabel");
+      const count = selectedCustomerIds.size;
+      if (count > 0) {
+        btn.classList.remove("hidden");
+        label.innerText = `Hapus Terpilih (${count})`;
+      } else {
+        btn.classList.add("hidden");
+      }
+    }
+
+    function deleteSingleCustomer(id, nama) {
+      openConfirm("Hapus Data Pelanggan?", `Apakah Anda yakin ingin menghapus pelanggan "${nama}"? Data yang dihapus tidak dapat dikembalikan.`, async () => {
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('customers').delete().eq('id', id);
+          } catch (e) {}
+        }
+        allCustomers = allCustomers.filter(c => (c.id || c.nomor_undian) !== id);
+        localStorage.setItem("dolphinstore_customers", JSON.stringify(allCustomers));
+        selectedCustomerIds.delete(id);
+        updateBulkDeleteButton();
+        renderDashboardData(allCustomers);
+        showToast(`Data pelanggan "${nama}" berhasil dihapus.`, "success");
+      });
+    }
+
+    function deleteSelectedCustomers() {
+      const count = selectedCustomerIds.size;
+      if (count === 0) return;
+      openConfirm("Hapus Massal?", `Apakah Anda yakin ingin menghapus ${count} data pelanggan yang dipilih secara bersamaan?`, async () => {
+        const idsArray = Array.from(selectedCustomerIds);
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('customers').delete().in('id', idsArray);
+          } catch (e) {}
+        }
+        allCustomers = allCustomers.filter(c => !selectedCustomerIds.has(c.id || c.nomor_undian));
+        localStorage.setItem("dolphinstore_customers", JSON.stringify(allCustomers));
+        selectedCustomerIds.clear();
+        updateBulkDeleteButton();
+        renderDashboardData(allCustomers);
+        showToast(`${count} data pelanggan berhasil dihapus massal!`, "success");
+      });
+    }
+
+    function openEditCustomerModal(id) {
+      const customer = allCustomers.find(c => (c.id || c.nomor_undian) === id);
+      if (!customer) return;
+
+      document.getElementById("editCustomerId").value = id;
+      document.getElementById("editNomorUndian").value = customer.nomor_undian || '';
+      document.getElementById("editNama").value = customer.nama || '';
+      document.getElementById("editJk").value = customer.jk || 'Laki-laki';
+      document.getElementById("editTglLahir").value = customer.tgl_lahir || '';
+      document.getElementById("editWa").value = customer.wa || '';
+      document.getElementById("editProvinsi").value = customer.provinsi || '';
+      document.getElementById("editKabupaten").value = customer.kabupaten || '';
+      document.getElementById("editKecamatan").value = customer.kecamatan || '';
+      document.getElementById("editDesa").value = customer.desa || '';
+
+      document.getElementById("editCustomerModal").classList.remove("hidden");
+      document.getElementById("editCustomerModal").classList.add("flex");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editCustomerModal").classList.add("hidden");
+      document.getElementById("editCustomerModal").classList.remove("flex");
+    }
+
+    async function saveCustomerEdit(e) {
+      e.preventDefault();
+      const id = document.getElementById("editCustomerId").value;
+      const updatedData = {
+        nama: document.getElementById("editNama").value.trim(),
+        jk: document.getElementById("editJk").value,
+        tgl_lahir: document.getElementById("editTglLahir").value,
+        wa: document.getElementById("editWa").value.trim(),
+        provinsi: document.getElementById("editProvinsi").value.trim(),
+        kabupaten: document.getElementById("editKabupaten").value.trim(),
+        kecamatan: document.getElementById("editKecamatan").value.trim(),
+        desa: document.getElementById("editDesa").value.trim()
+      };
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('customers').update(updatedData).eq('id', id);
+        } catch (e) {}
+      }
+
+      const index = allCustomers.findIndex(c => (c.id || c.nomor_undian) === id);
+      if (index !== -1) {
+        allCustomers[index] = { ...allCustomers[index], ...updatedData };
+        localStorage.setItem("dolphinstore_customers", JSON.stringify(allCustomers));
+      }
+
+      closeEditModal();
+      renderDashboardData(allCustomers);
+      showToast("Data pelanggan berhasil diperbarui!", "success");
+    }
+
+    function exportCustomersCSV() {
+      if (allCustomers.length === 0) {
+        showToast("Tidak ada data pelanggan untuk diekspor!", "info");
+        return;
+      }
+      let csv = "No,Nomor Undian,Nama,Jenis Kelamin,Tanggal Lahir,WhatsApp,Provinsi,Kabupaten/Kota,Kecamatan,Desa/Kelurahan,Tanggal Daftar\n";
+      allCustomers.forEach((c, i) => {
+        csv += `"${i+1}","${c.nomor_undian||''}","${c.nama||''}","${c.jk||''}","${c.tgl_lahir||''}","${c.wa||''}","${c.provinsi||''}","${c.kabupaten||''}","${c.kecamatan||''}","${c.desa||''}","${c.created_at||''}"\n`;
+      });
+      downloadCSVFile(csv, `Dolphinstore_Pelanggan_${new Date().toISOString().slice(0,10)}.csv`);
+    }
+
+    function downloadCSVFile(csvContent, filename) {
+      const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Dokumen CSV berhasil diunduh!", "success");
+    }
+
+    function checkUrlHash() {
+      const hash = window.location.hash;
+      if (hash === '#undian') {
+        switchTab('tab-undian');
+      } else if (hash === '#dashboard') {
+        openDashboardSafe();
+      } else {
+        switchTab('tab-register');
+      }
+    }
+
+    function toggleNavBar() {
+      const header = document.getElementById("mainHeader");
+      if (header) {
+        header.classList.toggle("hidden");
+        const isHidden = header.classList.contains("hidden");
+        showToast(isHidden ? "Navigasi atas disembunyikan." : "Navigasi atas ditampilkan kembali.", "info");
+      }
+    }
+
+    // Shortcut keyboard untuk staf menampilkan/menyembunyikan navbar (Ctrl + Shift + H atau Alt + N)
+    window.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'h') || (e.altKey && e.key.toLowerCase() === 'n')) {
+        e.preventDefault();
+        toggleNavBar();
+      }
+    });
+
+    window.addEventListener("load", () => {
+      initSupabase();
+      initDateDropdowns();
+      loadProvinces();
+      checkUrlHash();
+    });
+
+    window.addEventListener("hashchange", checkUrlHash);
+  </script>
+</body>
+</html>
